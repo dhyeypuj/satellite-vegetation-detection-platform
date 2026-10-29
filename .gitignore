@@ -1,0 +1,66 @@
+# ==========================================
+# Excluded Project Documents & Proposals
+# ==========================================
+*.docx
+*.doc
+*.pdf
+~*
+~$*
+ET401 Project Proposal Dhyey.pdf
+ET_P1_PROJECT PROPOSAL.pdf
+ET_P1_PROJECT_PROPOSAL.docx
+ET_P1_PROJECT_PROPOSAL_CLEAN.docx
+
+# ==========================================
+# Excluded Original Baseline Python Scripts
+# ==========================================
+*Final Code*.py
+*final code*.py
+
+# ==========================================
+# Python & Environment Artifacts
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Testing & Cache
+.pytest_cache/
+.coverage
+htmlcov/
+test_output/
+
+# IDE & Operating System Files
+.vscode/
+.idea/
+.gemini/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini

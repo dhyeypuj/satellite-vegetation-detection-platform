@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vegetation Detection Platform — Remote Sensing & Canopy Health</title>
+    <meta name="description" content="Vegetation detection, temporal change tracking, canopy health classification, carbon sequestration, and patch fragmentation analysis.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2"/>
+                        <path d="M10 22 C12 14, 14 12, 16 10 C18 12, 20 14, 22 22" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <circle cx="16" cy="10" r="2" fill="currentColor"/>
+                        <path d="M12 18 Q16 14 20 18" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="logo-title-row">
+                        <h1>Vegetation Detection Platform</h1>
+                        <span class="badge badge-version">v2.1</span>
+                    </div>
+                    <p class="subtitle">Remote Sensing & Canopy Health Analysis System</p>
+                </div>
+            </div>
+            
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-tab="detect" id="tab-detect">
+                    <span class="tab-icon">🔬</span> Detect & Scale
+                </button>
+                <button class="nav-tab" data-tab="compare" id="tab-compare">
+                    <span class="tab-icon">📊</span> Compare (6 Methods)
+                </button>
+                <button class="nav-tab" data-tab="density" id="tab-density">
+                    <span class="tab-icon">🗺️</span> Density Map
+                </button>
+                <button class="nav-tab" data-tab="health" id="tab-health">
+                    <span class="tab-icon">🌿</span> Canopy Health
+                </button>
+                <button class="nav-tab" data-tab="patches" id="tab-patches">
+                    <span class="tab-icon">🧩</span> Patch Fragmentation
+                </button>
+                <button class="nav-tab" data-tab="temporal" id="tab-temporal">
+                    <span class="tab-icon">🔄</span> Temporal Change
+                </button>
+                <button class="nav-tab nav-tab-highlight" id="btn-open-report">
+                    <span class="tab-icon">📄</span> Audit Report
+                </button>
+                <a href="/api/export_zip" class="nav-tab nav-tab-zip" id="btn-download-zip" title="Download Complete Package (.ZIP)">
+                    <span class="tab-icon">📦</span> Download ZIP
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main">
+
+        <!-- GLOBAL IMAGE UPLOAD SECTION -->
+        <section class="upload-section" id="upload-section">
+            <div class="upload-card">
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">🛰️</div>
+                    <h2>Load Satellite Scene</h2>
+                    <p>Drag & drop high-resolution satellite imagery or select benchmark</p>
+                    <input type="file" id="file-input" accept="image/*" hidden>
+                    <div class="upload-actions">
+                        <button class="btn btn-primary" id="btn-browse">Browse Satellite Files</button>
+                        <button class="btn btn-secondary" id="btn-default">Use Benchmark Image</button>
+                    </div>
+                </div>
+                <div class="upload-preview hidden" id="upload-preview">
+                    <img id="preview-image" alt="Uploaded satellite image">
+                    <div class="preview-info">
+                        <span id="preview-dims">1200 x 896 px</span>
+                        <div class="preview-btn-group">
+                            <button class="btn btn-sm" id="btn-change">Change Scene</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- 1. DETECT & AREA SCALE TAB -->
+        <!-- ================================================================= -->
+        <section class="tab-content active" id="content-detect">
+            <div class="detect-layout">
+                <!-- Controls Panel -->
+                <aside class="controls-panel">
+                    <div class="panel-header">
+                        <h3>Detection Engine & GIS Scaler</h3>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Spectral Algorithm</label>
+                        <select id="method-select" class="select-input">
+                            <option value="hsv" selected>HSV Color Space Segmentation</option>
+                            <option value="exg">Excess Green Index (ExG)</option>
+                            <option value="exgr">Excess Green-Red (ExGR)</option>
+                            <option value="vari">VARI (Atmospherically Resistant)</option>
+                            <option value="gli">Green Leaf Index (GLI)</option>
+                            <option value="sobel">Sobel Edge (Original Baseline)</option>
+                        </select>
+                    </div>
+
+                    <!-- HSV Controls -->
+                    <div id="hsv-controls" class="method-controls">
+                        <div class="control-group">
+                            <label class="control-label">Hue Spectrum Filter</label>
+                            <div class="range-dual">
+                                <input type="range" id="h-low" min="0" max="179" value="25" class="range-input">
+                                <input type="range" id="h-high" min="0" max="179" value="95" class="range-input">
+                                <div class="range-values">
+                                    <span id="h-low-val">25</span> — <span id="h-high-val">95</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Min Saturation (Purity)</label>
+                            <input type="range" id="s-low" min="0" max="255" value="30" class="range-input">
+                            <div class="range-values"><span id="s-low-val">30</span> / 255</div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Min Value (Brightness)</label>
+                            <input type="range" id="v-low" min="0" max="255" value="30" class="range-input">
+                            <div class="range-values"><span id="v-low-val">30</span> / 255</div>
+                        </div>
+                    </div>
+
+                    <!-- Generic Threshold Controls -->
+                    <div id="threshold-controls" class="method-controls hidden">
+                        <div class="control-group">
+                            <label class="control-label" id="threshold-label">Index Threshold</label>
+                            <input type="range" id="threshold-input" min="-100" max="100" value="20" step="1" class="range-input">
+                            <div class="range-values"><span id="threshold-val">20</span></div>
+                        </div>
+                    </div>
+
+                    <!-- GIS Area Scaler (GSD) -->
+                    <div class="control-group gis-scaler-group">
+                        <label class="control-label">📡 Sensor GSD (Resolution)</label>
+                        <select id="gsd-preset" class="select-input">
+                            <option value="10.0" selected>Sentinel-2 (10 m/pixel)</option>
+                            <option value="3.0">PlanetScope (3 m/pixel)</option>
+                            <option value="0.5">Commercial High-Res (0.5 m/pixel)</option>
+                            <option value="0.1">Drone / Aerial UAV (0.1 m/pixel)</option>
+                            <option value="30.0">Landsat-8 (30 m/pixel)</option>
+                            <option value="custom">Custom Resolution...</option>
+                        </select>
+                        <div id="custom-gsd-box" class="custom-gsd-box hidden">
+                            <input type="number" id="custom-gsd-val" class="text-input" placeholder="Meters/pixel" value="10.0" step="0.1" min="0.01">
+                        </div>
+                    </div>
+
+                    <!-- Quadrant ROI Sector Selector -->
+                    <div class="control-group">
+                        <label class="control-label">🔍 Sub-Sector ROI Slicer</label>
+                        <select id="quadrant-select" class="select-input">
+                            <option value="all" selected>Full Scene Overview</option>
+                            <option value="top_left">North-West (Top-Left)</option>
+                            <option value="top_right">North-East (Top-Right)</option>
+                            <option value="bottom_left">South-West (Bottom-Left)</option>
+                            <option value="bottom_right">South-East (Bottom-Right)</option>
+                            <option value="center_core">Central Core Zone</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary btn-block" id="btn-apply-detect">Apply & Run Detection</button>
+                </aside>
+
+                <!-- Visual Output Area -->
+                <div class="results-area">
+                    <!-- Real-World GIS Scale Banner -->
+                    <div class="gis-banner" id="gis-banner">
+                        <div class="gis-item">
+                            <span class="gis-label">Estimated Canopy Area</span>
+                            <span class="gis-val" id="gis-hectares">-- ha</span>
+                        </div>
+                        <div class="gis-divider"></div>
+                        <div class="gis-item">
+                            <span class="gis-label">Square Kilometers</span>
+                            <span class="gis-val" id="gis-sqkm">-- km²</span>
+                        </div>
+                        <div class="gis-divider"></div>
+                        <div class="gis-item">
+                            <span class="gis-label">Acres</span>
+                            <span class="gis-val" id="gis-acres">-- acres</span>
+                        </div>
+                        <div class="gis-divider"></div>
+                        <div class="gis-item">
+                            <span class="gis-label">Ground Sampling</span>
+                            <span class="gis-val text-green" id="gis-current-gsd">10.0 m/px</span>
+                        </div>
+                    </div>
+
+                    <!-- Carbon Sequestration Banner -->
+                    <div class="carbon-banner" id="carbon-banner">
+                        <div class="carbon-item">
+                            <span class="carbon-icon">🌲</span>
+                            <div>
+                                <span class="carbon-val" id="carbon-biomass">-- tons</span>
+                                <span class="carbon-lbl">Estimated Aboveground Biomass</span>
+                            </div>
+                        </div>
+                        <div class="carbon-divider"></div>
+                        <div class="carbon-item">
+                            <span class="carbon-icon">🌍</span>
+                            <div>
+                                <span class="carbon-val text-green" id="carbon-co2e">-- tCO₂e</span>
+                                <span class="carbon-lbl">Carbon Sequestered</span>
+                            </div>
+                        </div>
+                        <div class="carbon-divider"></div>
+                        <div class="carbon-item">
+                            <span class="carbon-icon">🚗</span>
+                            <div>
+                                <span class="carbon-val text-blue" id="carbon-vehicles">-- cars/yr</span>
+                                <span class="carbon-lbl">Annual Vehicle Emissions Offset</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Image Views -->
+                    <div class="image-grid">
+                        <div class="image-card">
+                            <div class="image-card-header">
+                                <h4>Original Satellite View</h4>
+                                <button class="btn btn-xs" id="btn-toggle-cir">🛰️ Simulate CIR</button>
+                            </div>
+                            <div class="image-container" id="container-original">
+                                <div class="image-placeholder">No image loaded</div>
+                            </div>
+                        </div>
+
+                        <div class="image-card">
+                            <div class="image-card-header">
+                                <h4>Binary Classification Mask</h4>
+                                <span class="badge badge-mask">0 / 255</span>
+                            </div>
+                            <div class="image-container" id="container-mask">
+                                <div class="image-placeholder">Run detection to view mask</div>
+                            </div>
+                        </div>
+
+                        <div class="image-card image-card-wide">
+                            <div class="image-card-header">
+                                <h4>Vegetation Canopy Overlay</h4>
+                                <div class="view-toggles">
+                                    <button class="btn btn-xs active" data-view="overlay">Green Overlay</button>
+                                    <button class="btn btn-xs" data-view="cir">CIR False-Color</button>
+                                    <button class="btn btn-xs" data-view="mask">Mask Only</button>
+                                </div>
+                            </div>
+                            <div class="image-container" id="container-overlay">
+                                <div class="image-placeholder">Run detection to view overlay</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quantitative Stats Cards -->
+                    <div class="stats-panel" id="stats-panel">
+                        <div class="stat-card">
+                            <div class="stat-icon">🌱</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Vegetation Coverage</span>
+                                <span class="stat-value text-green" id="stat-coverage">--%</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🟩</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Vegetation Pixels</span>
+                                <span class="stat-value" id="stat-veg-pixels">--</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🟫</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Non-Vegetation Pixels</span>
+                                <span class="stat-value" id="stat-nonveg-pixels">--</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📐</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Total Scene Pixels</span>
+                                <span class="stat-value" id="stat-total-pixels">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- 2. COMPARE (6 METHODS) TAB -->
+        <!-- ================================================================= -->
+        <section class="tab-content" id="content-compare">
+            <div class="compare-header">
+                <div>
+                    <h2>Multi-Method Spectral Comparison</h2>
+                    <p>Compare all 6 vegetation indices and edge filters across identical sensor pixels</p>
+                </div>
+                <button class="btn btn-primary" id="btn-run-compare">
+                    <span>⚡ Run All 6 Algorithms</span>
+                </button>
+            </div>
+
+            <div class="comparison-grid" id="comparison-grid">
+                <div class="empty-state">
+                    <p>Click "Run All 6 Algorithms" to generate side-by-side comparative matrices.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- 3. DENSITY HEATMAP TAB -->
+        <!-- ================================================================= -->
+        <section class="tab-content" id="content-density">
+            <div class="density-layout">
+                <aside class="controls-panel">
+                    <div class="panel-header">
+                        <h3>Heatmap Parameters</h3>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Base Detection Method</label>
+                        <select id="density-method-select" class="select-input">
+                            <option value="hsv" selected>HSV Segmentation</option>
+                            <option value="exg">Excess Green (ExG)</option>
+                            <option value="vari">VARI Index</option>
+                            <option value="gli">Green Leaf Index (GLI)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Spatial Grid Kernel Resolution</label>
+                        <select id="density-grid-select" class="select-input">
+                            <option value="10">10 × 10 (Broad Regional)</option>
+                            <option value="20" selected>20 × 20 (Standard Resolution)</option>
+                            <option value="30">30 × 30 (Fine Granularity)</option>
+                            <option value="40">40 × 40 (Ultra-Fine Local)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary btn-block" id="btn-generate-density">Compute Density Heatmap</button>
+                </aside>
+
+                <div class="results-area">
+                    <div class="density-stats" id="density-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Average Canopy Density</span>
+                                <span class="stat-value text-green" id="density-avg">--%</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🔥</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Peak Concentration</span>
+                                <span class="stat-value text-orange" id="density-max">--%</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">❄️</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Minimum Density</span>
+                                <span class="stat-value text-blue" id="density-min">--%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="image-card image-card-wide">
+                        <div class="image-card-header">
+                            <h4>False-Color Spatial Density Visualization (JET Spectrum)</h4>
+                            <div class="colormap-legend">
+                                <span>Sparse (0%)</span>
+                                <div class="gradient-bar"></div>
+                                <span>Dense (100%)</span>
+                            </div>
+                        </div>
+                        <div class="image-container" id="container-density">
+                            <div class="image-placeholder">Click "Compute Density Heatmap" to generate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- 4. CANOPY HEALTH & STRESS TAB -->
+        <!-- ================================================================= -->
+        <section class="tab-content" id="content-health">
+            <div class="health-layout">
+                <aside class="controls-panel">
+                    <div class="panel-header">
+                        <h3>Canopy Vigor Classification</h3>
+                    </div>
+                    <p class="panel-desc">Classifies detected vegetation into 3 physiological vigor tiers based on normalized Green Leaf chlorophyll absorption.</p>
+                    <button class="btn btn-primary btn-block" id="btn-run-health">⚡ Classify Canopy Health</button>
+                    
+                    <div class="health-tiers-legend">
+                        <div class="tier-legend-item">
+                            <span class="tier-dot tier-1"></span>
+                            <div>
+                                <strong>Tier 1: High Vigor</strong>
+                                <p>Dense canopy, active chlorophyll</p>
+                            </div>
+                        </div>
+                        <div class="tier-legend-item">
+                            <span class="tier-dot tier-2"></span>
+                            <div>
+                                <strong>Tier 2: Moderate Vigor</strong>
+                                <p>Grasslands, light shrubs</p>
+                            </div>
+                        </div>
+                        <div class="tier-legend-item">
+                            <span class="tier-dot tier-3"></span>
+                            <div>
+                                <strong>Tier 3: Stressed / Dry</strong>
+                                <p>Drought, disease, or senescent</p>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <div class="results-area">
+                    <!-- Health Score Banner -->
+                    <div class="health-score-banner" id="health-score-banner">
+                        <div class="score-circle">
+                            <span class="score-num" id="health-score-val">--</span>
+                            <span class="score-denom">/ 100</span>
+                        </div>
+                        <div class="score-details">
+                            <h3>Composite Canopy Health Index</h3>
+                            <p id="health-score-desc">Run classification to assess physiological vigor distribution across the landscape.</p>
+                        </div>
+                    </div>
+
+                    <!-- Health Tiers Metric Cards -->
+                    <div class="health-metrics-grid" id="health-metrics-grid">
+                        <div class="health-tier-card card-tier-1">
+                            <div class="tier-card-header">
+                                <span class="tier-badge">Tier 1</span>
+                                <h4>High Vigor / Dense Canopy</h4>
+                            </div>
+                            <div class="tier-stats-row">
+                                <div>
+                                    <span class="tier-val" id="tier1-pct-veg">--%</span>
+                                    <span class="tier-lbl">of Total Canopy</span>
+                                </div>
+                                <div>
+                                    <span class="tier-val" id="tier1-pixels">-- px</span>
+                                    <span class="tier-lbl">Pixel Count</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="health-tier-card card-tier-2">
+                            <div class="tier-card-header">
+                                <span class="tier-badge">Tier 2</span>
+                                <h4>Moderate / Grassland</h4>
+                            </div>
+                            <div class="tier-stats-row">
+                                <div>
+                                    <span class="tier-val" id="tier2-pct-veg">--%</span>
+                                    <span class="tier-lbl">of Total Canopy</span>
+                                </div>
+                                <div>
+                                    <span class="tier-val" id="tier2-pixels">-- px</span>
+                                    <span class="tier-lbl">Pixel Count</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="health-tier-card card-tier-3">
+                            <div class="tier-card-header">
+                                <span class="tier-badge">Tier 3</span>
+                                <h4>Stressed / Dry Canopy</h4>
+                            </div>
+                            <div class="tier-stats-row">
+                                <div>
+                                    <span class="tier-val" id="tier3-pct-veg">--%</span>
+                                    <span class="tier-lbl">of Total Canopy</span>
+                                </div>
+                                <div>
+                                    <span class="tier-val" id="tier3-pixels">-- px</span>
+                                    <span class="tier-lbl">Pixel Count</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Health Overlay View -->
+                    <div class="image-card image-card-wide">
+                        <div class="image-card-header">
+                            <h4>3-Tier Canopy Health Segmentation Overlay</h4>
+                            <div class="view-toggles">
+                                <button class="btn btn-xs active" data-healthview="overlay">Full Overlay</button>
+                                <button class="btn btn-xs" data-healthview="tier1">Tier 1 Mask</button>
+                                <button class="btn btn-xs" data-healthview="tier2">Tier 2 Mask</button>
+                                <button class="btn btn-xs" data-healthview="tier3">Tier 3 Mask</button>
+                            </div>
+                        </div>
+                        <div class="image-container" id="container-health">
+                            <div class="image-placeholder">Run canopy health classification to view</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- 5. PATCH & FRAGMENTATION TAB -->
+        <!-- ================================================================= -->
+        <section class="tab-content" id="content-patches">
+            <div class="patch-layout">
+                <aside class="controls-panel">
+                    <div class="panel-header">
+                        <h3>Landscape Patch Settings</h3>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Detection Method</label>
+                        <select id="patch-method-select" class="select-input">
+                            <option value="hsv" selected>HSV Segmentation</option>
+                            <option value="exg">Excess Green (ExG)</option>
+                            <option value="vari">VARI Index</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Min Patch Noise Filter (Pixels)</label>
+                        <input type="range" id="min-patch-size" min="10" max="200" value="25" class="range-input">
+                        <div class="range-values"><span id="min-patch-val">25</span> px threshold</div>
+                    </div>
+                    <button class="btn btn-primary btn-block" id="btn-run-patches">⚡ Analyze Patch Clusters</button>
+                </aside>
+
+                <div class="results-area">
+                    <!-- Fragmentation Summary Cards -->
+                    <div class="patch-stats-grid" id="patch-stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🧩</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Total Discrete Patches</span>
+                                <span class="stat-value text-green" id="patch-total-count">--</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">👑</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Largest Core Cluster</span>
+                                <span class="stat-value text-orange" id="patch-largest-area">-- px</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📐</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Mean Patch Size</span>
+                                <span class="stat-value" id="patch-mean-area">-- px</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⚡</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Fragmentation Index</span>
+                                <span class="stat-value text-blue" id="patch-fragmentation-ratio">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Annotated Bounding Box Visualizer -->
+                    <div class="image-card image-card-wide">
+                        <div class="image-card-header">
+                            <h4>Canopy Patch Delineation & Top-10 Cluster Bounding Boxes</h4>
+                            <span class="badge badge-mask">8-Connectivity Components</span>
+                        </div>
+                        <div class="image-container" id="container-patches">
+                            <div class="image-placeholder">Run patch analysis to delineate clusters</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- 6. TEMPORAL CHANGE DETECTION TAB -->
+        <!-- ================================================================= -->
+        <section class="tab-content" id="content-temporal">
+            <div class="temporal-layout">
+                <aside class="controls-panel">
+                    <div class="panel-header">
+                        <h3>Temporal Dual Scene Loader</h3>
+                    </div>
+                    
+                    <div class="control-group">
+                        <button class="btn btn-secondary btn-block" id="btn-load-temporal-sample">
+                            🛰️ Load Benchmark Before/After Pair
+                        </button>
+                    </div>
+
+                    <div class="dual-upload-box">
+                        <div class="upload-mini-box">
+                            <label>Scene 1 ("Before" Baseline)</label>
+                            <input type="file" id="before-file-input" accept="image/*" class="file-input-sm">
+                        </div>
+                        <div class="upload-mini-box">
+                            <label>Scene 2 ("After" Follow-up)</label>
+                            <input type="file" id="after-file-input" accept="image/*" class="file-input-sm">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Detection Algorithm</label>
+                        <select id="temporal-method-select" class="select-input">
+                            <option value="hsv" selected>HSV Segmentation</option>
+                            <option value="exg">Excess Green (ExG)</option>
+                            <option value="vari">VARI Index</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Sensor Ground Resolution (GSD)</label>
+                        <select id="temporal-gsd-select" class="select-input">
+                            <option value="10.0" selected>Sentinel-2 (10 m/pixel)</option>
+                            <option value="3.0">PlanetScope (3 m/pixel)</option>
+                            <option value="0.5">High-Res (0.5 m/pixel)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary btn-block" id="btn-run-temporal">⚡ Compute Temporal Change</button>
+                </aside>
+
+                <div class="results-area">
+                    <!-- Status Alert Banner -->
+                    <div class="temporal-status-banner" id="temporal-status-banner">
+                        <div class="status-indicator-dot" id="status-indicator-dot"></div>
+                        <div>
+                            <h3 id="temporal-status-title">Temporal Analysis Ready</h3>
+                            <p id="temporal-status-desc">Load Before & After scenes and run change detection to map deforestation or biomass gains.</p>
+                        </div>
+                    </div>
+
+                    <!-- Delta Metrics Cards -->
+                    <div class="temporal-stats-grid" id="temporal-stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📉</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Net Canopy Delta</span>
+                                <span class="stat-value" id="stat-net-delta">--%</span>
+                            </div>
+                        </div>
+                        <div class="stat-card card-loss">
+                            <div class="stat-icon">🪵</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Deforestation / Loss</span>
+                                <span class="stat-value text-red" id="stat-loss-area">-- ha</span>
+                            </div>
+                        </div>
+                        <div class="stat-card card-gain">
+                            <div class="stat-icon">🌱</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Reforestation / Gain</span>
+                                <span class="stat-value text-green" id="stat-gain-area">-- ha</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🌲</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Persistent Canopy</span>
+                                <span class="stat-value text-emerald" id="stat-persist-area">-- ha</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Change Visualization Overlay -->
+                    <div class="image-card image-card-wide">
+                        <div class="image-card-header">
+                            <h4>Pixel-Wise Differential Change Map</h4>
+                            <div class="temporal-legend">
+                                <span class="t-legend-item"><span class="t-dot red"></span> Deforestation</span>
+                                <span class="t-legend-item"><span class="t-dot green"></span> New Growth</span>
+                                <span class="t-legend-item"><span class="t-dot dark-green"></span> Persistent</span>
+                            </div>
+                        </div>
+                        <div class="image-container" id="container-temporal-viz">
+                            <div class="image-placeholder">Load Before & After scenes to view change map</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===== COMPREHENSIVE AUDIT REPORT MODAL ===== -->
+    <div class="modal-backdrop hidden" id="report-modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-title-row">
+                    <span class="report-icon">📄</span>
+                    <div>
+                        <h2>Diagnostic Environmental Audit Report</h2>
+                        <p class="report-subtitle">Remote Sensing & Computer Vision Canopy Assessment</p>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary btn-sm" id="btn-print-report">🖨️ Print / Save as PDF</button>
+                    <button class="btn btn-icon" id="btn-close-report">✕</button>
+                </div>
+            </div>
+            
+            <div class="modal-body" id="report-body">
+                <div class="report-loading">Generating full diagnostic report payload...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <p><strong>Vegetation Detection Platform (v2.1)</strong> — Quantitative Remote Sensing & Canopy Health</p>
+            <p class="footer-sub">ET401 Project | OpenCV & Flask Remote Sensing Suite</p>
+        </div>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
