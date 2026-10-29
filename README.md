@@ -104,11 +104,7 @@ ET401 P1/
 │
 ├── vegetation_detector.py         # Core OpenCV engine (6 methods, density map, health, patches, temporal change, carbon, CIR, quadrants)
 ├── app.py                        # Flask REST API server (v2.1 PRO)
-├── test_suite.py                 # Automated unit and integration test runner
 ├── requirements.txt              # Project dependencies
-├── satellite_image.jpg           # Default benchmark satellite scene
-├── satellite_image_before.jpg    # Temporal baseline scene
-├── satellite_image_after.jpg     # Temporal follow-up scene
 ├── README.md                     # Comprehensive technical documentation
 ├── PROJECT_PRESENTATION_GUIDE.md # Presentation pitch, viva Q&A, and demo script
 │
@@ -133,14 +129,9 @@ python app.py
 ```
 Open **`http://localhost:5000`** in your browser.
 
-### 3. Running the Automated Test Suite
+### 3. Command-Line Batch Processing
 ```powershell
-python test_suite.py
-```
-
-### 4. Command-Line Batch Processing
-```powershell
-python vegetation_detector.py --image satellite_image.jpg --output-dir output_results
+python vegetation_detector.py --image <path_to_image.jpg> --output-dir output_results
 ```
 
 ---

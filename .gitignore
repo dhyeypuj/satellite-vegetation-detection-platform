@@ -52,6 +52,16 @@ ENV/
 .coverage
 htmlcov/
 test_output/
+test_*.py
+*test*.py
+
+# Imagery & Satellite Datasets
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.tif
+*.tiff
 demo_satellite_imagery/
 
 # IDE & Operating System Files
