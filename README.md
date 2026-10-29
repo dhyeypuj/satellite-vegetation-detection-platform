@@ -106,7 +106,6 @@ ET401 P1/
 ├── app.py                        # Flask REST API server (v2.1 PRO)
 ├── requirements.txt              # Project dependencies
 ├── README.md                     # Comprehensive technical documentation
-├── PROJECT_PRESENTATION_GUIDE.md # Presentation pitch, viva Q&A, and demo script
 │
 └── static/
     ├── index.html                # Modern 6-tab dashboard UI & report modal
