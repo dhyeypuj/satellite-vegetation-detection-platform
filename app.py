@@ -13,6 +13,7 @@ from flask import Flask, request, jsonify, send_from_directory, send_file
 import os
 import sys
 import io
+import tempfile
 import zipfile
 import cv2
 import numpy as np
@@ -31,7 +32,8 @@ from vegetation_detector import (
     image_to_base64, run_all_methods
 )
 
-app = Flask(__name__, static_folder="static")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, static_folder=os.path.join(BASE_DIR, "static"))
 
 # Store the current loaded image in memory
 current_image = None
@@ -48,7 +50,7 @@ def get_active_image():
     if current_image is not None:
         return current_image
         
-    default_path = os.path.join(os.path.dirname(__file__), "satellite_image.jpg")
+    default_path = os.path.join(BASE_DIR, "satellite_image.jpg")
     if os.path.exists(default_path):
         current_image = preprocess_image(load_image(default_path))
         current_image_path = default_path
@@ -59,13 +61,13 @@ def get_active_image():
 @app.route("/")
 def index():
     """Serve the main dashboard HTML page."""
-    return send_from_directory("static", "index.html")
+    return send_from_directory(app.static_folder, "index.html")
 
 
 @app.route("/static/<path:filename>")
 def serve_static(filename):
     """Serve static files (CSS, JS)."""
-    return send_from_directory("static", filename)
+    return send_from_directory(app.static_folder, filename)
 
 
 @app.route("/api/upload", methods=["POST"])
@@ -84,7 +86,7 @@ def upload_image():
     if file.filename == "":
         return jsonify({"error": "No file selected"}), 400
     
-    upload_dir = os.path.join(os.path.dirname(__file__), "uploads")
+    upload_dir = os.path.join(tempfile.gettempdir(), "satellite_uploads")
     os.makedirs(upload_dir, exist_ok=True)
     filepath = os.path.join(upload_dir, "uploaded_image.jpg")
     file.save(filepath)
@@ -433,7 +435,7 @@ def temporal_change():
         method = request.form.get("method", "hsv")
         gsd_meters = float(request.form.get("gsd_meters", 10.0))
         
-        upload_dir = os.path.join(os.path.dirname(__file__), "uploads")
+        upload_dir = os.path.join(tempfile.gettempdir(), "satellite_uploads")
         os.makedirs(upload_dir, exist_ok=True)
         
         if "image_before" in request.files and request.files["image_before"].filename != "":
