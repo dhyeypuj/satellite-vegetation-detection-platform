@@ -52,6 +52,7 @@ ENV/
 .coverage
 htmlcov/
 test_output/
+demo_satellite_imagery/
 
 # IDE & Operating System Files
 .vscode/
